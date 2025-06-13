@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Boston Price Predictor</title>
+    <style>
+        body {
+            font-family: Arial;
+            background-color: #eef;
+            text-align: center;
+            padding: 40px;
+        }
+        form {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            display: inline-block;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input, button {
+            margin: 10px;
+            padding: 10px;
+            width: 250px;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Boston House Price Predictor</h1>
+    <form action="/predict" method="post">
+        {% for i in range(13) %}
+            <input type="text" name="feature{{i}}" placeholder="Feature {{i+1}}" required><br>
+        {% endfor %}
+        <button type="submit">Predict</button>
+    </form>
+
+    {% if prediction_text %}
+        <h2>{{ prediction_text }}</h2>
+    {% endif %}
+</body>
+</html>

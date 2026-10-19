@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="history shell" id="history">
+    <div class="section-heading inline-heading"><div><p class="eyebrow">04 / FIELD NOTES</p><h2>Recent readings.</h2></div>{% if history %}<form action="{{ url_for('clear_history') }}" method="post"><button class="text-button" type="submit">Clear history</button></form>{% endif %}</div>
+    {% if history %}<div class="history-list">{% for item in history %}<div class="history-item"><span class="history-index">0{{ loop.index }}</span><span><strong>{{ item.rooms }} rooms / local reading</strong><small>{{ item.timestamp }}</small></span><b>${{ "%.2f"|format(item.value) }}k</b></div>{% endfor %}</div>{% else %}<p class="empty-history">Your completed readings will appear here for this session.</p>{% endif %}
+</section>
+{% endblock %}

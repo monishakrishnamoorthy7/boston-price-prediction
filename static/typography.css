@@ -1,0 +1,68 @@
+/* Clearer type hierarchy for quick scanning on desktop and mobile. */
+body {
+    font-weight: 500;
+}
+
+.site-header nav a,
+.header-status,
+.text-link,
+.text-button,
+.eyebrow,
+.card-label,
+.button,
+.field-label,
+.form-intro strong,
+.form-intro small,
+.form-footnote,
+.result-kicker,
+.chart-header span,
+.legend,
+.metric-row,
+.map-coordinate,
+.map-marker,
+.site-footer {
+    font-weight: 700;
+}
+
+.hero-intro,
+.section-heading p:last-child,
+.field-description,
+.result-note,
+.model-card > p:not(.card-label),
+.metric-note,
+.limitations p,
+.empty-history {
+    color: #43524b;
+    font-weight: 600;
+}
+
+.field-label {
+    font-size: 13px;
+}
+
+.field-description {
+    font-size: 12px;
+}
+
+.field input,
+.field select {
+    font-weight: 600;
+}
+
+.button {
+    font-weight: 700;
+}
+
+.history-item strong {
+    font-weight: 600;
+}
+
+@media (max-width: 520px) {
+    .hero-intro {
+        font-size: 17px;
+    }
+
+    .field-label {
+        font-size: 14px;
+    }
+}

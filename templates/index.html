@@ -1,45 +1,36 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Boston Price Predictor</title>
-    <style>
-        body {
-            font-family: Arial;
-            background-color: #eef;
-            text-align: center;
-            padding: 40px;
-        }
-        form {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 10px;
-            display: inline-block;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        input, button {
-            margin: 10px;
-            padding: 10px;
-            width: 250px;
-            border-radius: 5px;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-        }
-    </style>
-</head>
-<body>
-    <h1>Boston House Price Predictor</h1>
-    <form action="/predict" method="post">
-        {% for i in range(13) %}
-            <input type="text" name="feature{{i}}" placeholder="Feature {{i+1}}" required><br>
-        {% endfor %}
-        <button type="submit">Predict</button>
-    </form>
-
-    {% if prediction_text %}
-        <h2>{{ prediction_text }}</h2>
-    {% endif %}
-</body>
-</html>
+{% extends "base.html" %}
+{% block content %}
+<section class="spa-view hero shell" id="home" data-view="home" aria-labelledby="home-heading">
+    <div class="hero-copy">
+        <p class="eyebrow">TERRAVISTA / PROPERTY INTELLIGENCE</p>
+        <h1 id="home-heading">Every place has <i>a pattern.</i></h1>
+        <p class="hero-intro">A considered way to read the signals in a place. TerraVista estimates historical housing values from the Boston Housing dataset and a linear regression model.</p>
+        <div class="hero-actions">
+            <a class="button button-dark" href="#predict">Explore a property <span>↘</span></a>
+            <a class="text-link" href="#insights">Understand the model <span>→</span></a>
+        </div>
+        <dl class="hero-meta"><div><dt>01</dt><dd>Enter local signals</dd></div><div><dt>02</dt><dd>Read the estimate</dd></div><div><dt>03</dt><dd>Keep your context</dd></div></dl>
+    </div>
+    <div class="topography hero-map" aria-label="Decorative topographic contour illustration" role="img">
+        <span class="map-coordinate coordinate-one">42° 21′ N / 71° 03′ W</span><span class="map-coordinate coordinate-two">FIELD STUDY / 01</span><div class="contours"></div><div class="map-crosshair"></div><div class="map-marker"><span></span><small>SIGNAL<br>READING</small></div>
+    </div>
+</section>
+<div class="spa-view view-panel" id="predict" data-view="predict" aria-labelledby="predict-heading">
+    {% include "estimate_section.html" %}
+</div>
+<div class="spa-view view-panel" id="insights" data-view="insights" aria-labelledby="insights-heading">
+    {% include "model_section.html" %}
+</div>
+<section class="spa-view view-panel about shell" id="about" data-view="about" aria-labelledby="about-heading">
+    <div class="section-heading">
+        <p class="eyebrow">04 / ABOUT TERRAVISTA</p>
+        <h2 id="about-heading">A clearer way to read the signal.</h2>
+        <p>TerraVista AI is an educational interface for exploring how a simple machine-learning model interprets place-based housing data.</p>
+    </div>
+    <div class="about-grid">
+        <article><p class="card-label">Technology</p><h3>Built to be legible.</h3><p>Flask serves the application, Python and scikit-learn power the prediction, and this lightweight client-side view layer keeps navigation fast without adding a framework.</p></article>
+        <article><p class="card-label">Methodology</p><h3>One measured baseline.</h3><p>A linear regression model uses 13 source features to estimate historical median home value. Model notes show performance on a reproducible held-out test split.</p></article>
+        <article><p class="card-label">Limitations</p><h3>Context matters.</h3><p>The Boston Housing dataset is historical and contains ethically problematic features. These estimates are not appraisals and should not guide lending, pricing, or decisions about people.</p></article>
+    </div>
+</section>
+{% endblock %}

@@ -1,85 +1,178 @@
 # TerraVista AI
 
-**Read the shape of a place.**
+### Explainable housing-price estimation with a reproducible machine-learning pipeline
 
-TerraVista AI is an editorial-style Flask application for exploring the original Boston Housing dataset through a Linear Regression model. It is an educational experiment in reading relationships between historical housing features and `medv`, the dataset's median home value target.
+TerraVista AI is a production-style Flask web application that turns the classic Boston Housing dataset into an interactive, explainable regression experience. Users can submit the dataset's 13 structured property and neighbourhood features, receive a model-generated estimate, inspect held-out evaluation metrics, and review the model's coefficient-level context.
 
-## Features
+> **Important:** This project is an educational demonstration of supervised learning and web deployment. Its historical data must not be used as a source of current property valuations, lending decisions, eligibility decisions, or decisions about people and communities.
 
-- Responsive TerraVista editorial interface with topographic-inspired SVG/CSS visuals.
-- Separate pages for the landing experience, property estimate, model notes, and recent readings.
-- Prediction workspace using the model's actual 13 input features.
-- Animated estimate reveal and session-scoped history of the five most recent predictions.
-- Held-out evaluation metrics, actual-versus-predicted chart, and coefficient context.
-- Accessible focus states, form validation, reduced-motion support, and mobile layouts.
-- No database or frontend framework required.
+![TerraVista AI interface](Screenshot.png)
 
-## Tech stack
+## Why this project stands out
 
-Python, Flask, scikit-learn, pandas, NumPy, HTML, CSS, and vanilla JavaScript.
+- **End-to-end ML product:** data loading, model training, serialization, inference, evaluation, and presentation are connected in one runnable application.
+- **Reproducible experimentation:** an explicit 80/20 train-test split with `random_state=42` makes the baseline evaluation repeatable.
+- **Explainability built in:** the model-notes experience exposes MAE, RMSE, R², actual-versus-predicted values, and linear coefficients instead of presenting a prediction as an opaque answer.
+- **Human-centred interface:** responsive editorial design, accessible focus states, inline validation, reduced-motion support, and a session-scoped reading history.
+- **Deployment-ready structure:** Flask application entry point, declared runtime dependencies, Gunicorn support, and environment-based secret configuration.
 
-## Installation and run
+## Core capabilities
+
+| Capability | Implementation |
+| --- | --- |
+| Interactive estimation | A validated form for all 13 model features |
+| Regression inference | Serialized `LinearRegression` model loaded from `model.pkl` |
+| Model evaluation | MAE, RMSE, R², test-set chart data, and coefficient context |
+| Recent readings | The five latest estimates stored in the user's Flask session |
+| JSON access | `GET /api/insights` exposes evaluation and explainability data |
+| Responsive UI | Server-rendered Jinja templates, semantic HTML, CSS, and vanilla JavaScript |
+| Production serving | Gunicorn command included for Render-style deployments |
+
+## System architecture
+
+```text
+boston.csv
+    │
+    ├── model.py ── train/test split ── LinearRegression ── model.pkl
+    │
+    └── app.py ── load model + evaluate baseline
+                    │
+                    ├── HTML views: /, /estimate, /model-notes, /recent
+                    ├── POST /predict: validate → infer → store session reading
+                    └── GET /api/insights: metrics + chart data + coefficients
+```
+
+### Machine-learning workflow
+
+1. Load the 506-row dataset from `boston.csv`.
+2. Separate the 13 predictors from the `medv` target.
+3. Split the data into training and held-out test partitions using `test_size=0.2` and `random_state=42`.
+4. Fit an ordinary least-squares `LinearRegression` estimator on the training partition.
+5. Serialize the trained estimator to `model.pkl`.
+6. Recreate the deterministic evaluation split in the Flask application and expose the resulting metrics.
+7. Validate incoming values against the observed feature ranges before inference.
+
+The target is expressed in thousands of 1970s-era dollars. The UI preserves that unit and formats estimates as `$X.XXk`.
+
+## Technology stack
+
+- **Backend:** Python, Flask, Gunicorn
+- **Machine learning:** scikit-learn `LinearRegression`
+- **Data processing:** pandas, NumPy
+- **Frontend:** Jinja2, semantic HTML, CSS, vanilla JavaScript
+- **Runtime artifacts:** CSV training data and serialized pickle model
+
+## Project structure
+
+```text
+.
+├── app.py                    # Flask routes, validation, inference, and insights API
+├── model.py                  # Reproducible training and model serialization script
+├── boston.csv                # Historical dataset
+├── model.pkl                 # Serialized trained LinearRegression estimator
+├── requirements.txt          # Runtime dependencies
+├── templates/                # Jinja page and partial templates
+└── static/                   # JavaScript and modular CSS assets
+```
+
+## Local development
+
+### Prerequisites
+
+- Python 3.10 or newer
+- PowerShell on Windows, or an equivalent shell on macOS/Linux
+
+### Install and run
 
 From the project directory:
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install flask scikit-learn pandas numpy
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 python model.py
 python app.py
 ```
 
-Open <http://127.0.0.1:5000/>.
+Open [http://127.0.0.1:5000/](http://127.0.0.1:5000/) in a browser.
 
-## Deploy on Render
-
-1. Push the contents of this project directory to a GitHub repository.
-2. In Render, choose **New +** → **Web Service**, connect the repository, and set the root directory to `boston-price-prediction` if the repository contains the parent folder.
-3. Use:
-   - Build command: `pip install -r requirements.txt`
-   - Start command: `gunicorn app:app`
-4. Add the environment variable `FLASK_SECRET_KEY` with a long random value.
-5. Click **Create Web Service**. Render will provide a public `onrender.com` URL after the first deploy.
-
-Keep `app.py`, `model.pkl`, `boston.csv`, `templates/`, and `static/` in the deployed project directory.
-
-The main pages are:
-
-- `/` — editorial landing page
-- `/estimate` — real 13-feature prediction form
-- `/model-notes` — held-out metrics and chart
-- `/recent` — session-scoped prediction history
-
-If PowerShell blocks activation, run the Python executable directly:
+If PowerShell execution policy prevents activation, invoke the virtual-environment interpreter directly:
 
 ```powershell
 .\.venv\Scripts\python.exe model.py
 .\.venv\Scripts\python.exe app.py
 ```
 
-## Model evaluation
+### Production-style serving (Unix/WSL)
 
-`model.py` trains the deployed `LinearRegression` model on an 80/20 split with `random_state=42` and writes `model.pkl`. The app independently evaluates a Linear Regression model on the same reproducible held-out split. It reports Mean Absolute Error (MAE), Root Mean Squared Error (RMSE), and R²; these are not accuracy percentages and should not be interpreted as a guarantee.
+```powershell
+python -m gunicorn --bind 0.0.0.0:8000 app:app
+```
 
-The target `medv` is expressed in thousands of 1970s-era dollars. The application keeps that unit and displays estimates as `$X.XXk`.
+Gunicorn is intended for Unix-like deployment environments. On native Windows, use `python app.py` for local development or deploy through a Linux-based service such as Render.
 
-## Dataset limitations
+Set a real secret outside local development:
 
-This is the historical Boston Housing dataset (506 rows, 13 predictors). It is not a reliable source for current Boston property values. It has serious ethical limitations, including a problematic racial variable represented by the source feature `B`. TerraVista retains the original feature set for reproducibility and explicitly flags it in the interface; it should not be used for lending, pricing, eligibility, or decisions about people and communities.
+```powershell
+$env:FLASK_SECRET_KEY = "replace-with-a-long-random-value"
+```
 
-Predictions are educational estimates from historical data, not appraisals, investment advice, or guaranteed market values.
+The application falls back to a development key only when `FLASK_SECRET_KEY` is not supplied.
 
-## Screenshots
+## Application routes
 
-![TerraVista AI interface](Screenshot.png)
+| Route | Method | Purpose |
+| --- | --- | --- |
+| `/` | `GET` | Landing page and product overview |
+| `/estimate` | `GET` | Prediction workspace |
+| `/predict` | `POST` | Validate form data and generate an estimate |
+| `/model-notes` | `GET` | Evaluation metrics and model context |
+| `/recent` | `GET` | Session-scoped recent readings |
+| `/clear-history` | `POST` | Clear the current session's reading history |
+| `/api/insights` | `GET` | Return metrics, chart rows, and coefficients as JSON |
 
-## Future improvements
+## Evaluation and interpretation
 
-- Replace the historical dataset with a documented, contemporary, ethically reviewed source.
-- Add a versioned preprocessing pipeline and model registry.
-- Add automated tests and uncertainty intervals.
-- Offer opt-in, privacy-reviewed persistence for saved explorations.
+The model-notes page reports:
+
+- **Mean Absolute Error (MAE):** average absolute prediction error in target units.
+- **Root Mean Squared Error (RMSE):** error metric that weights larger residuals more heavily.
+- **R²:** proportion of held-out target variance explained by the linear model.
+- **Coefficient context:** the fitted linear contribution associated with each input feature.
+
+These are baseline regression diagnostics, not accuracy percentages or guarantees of real-world performance. The model is intentionally simple so its behaviour can be inspected and discussed.
+
+## Data ethics and limitations
+
+The Boston Housing dataset is historical and has well-documented ethical limitations. In particular, its `B` feature encodes a problematic racial variable. TerraVista keeps the original feature set for reproducibility, labels the feature for careful interpretation, and does not present the application as a fair or contemporary valuation system.
+
+The dataset also represents a historical market context rather than today's housing conditions. Predictions are educational estimates, not appraisals, investment advice, or market forecasts. A responsible production system would require contemporary data, documented provenance, bias assessment, uncertainty intervals, monitoring, access controls, and domain review.
+
+## Deployment
+
+This project can be deployed as a Python web service on platforms such as Render:
+
+1. Push the project directory to a GitHub repository.
+2. Create a web service connected to the repository.
+3. Use the following commands:
+
+   ```text
+   Build command: pip install -r requirements.txt
+   Start command: gunicorn app:app
+   ```
+
+4. Configure `FLASK_SECRET_KEY` with a long, randomly generated value.
+5. Ensure `app.py`, `model.pkl`, `boston.csv`, `templates/`, and `static/` are included in the deployed service.
+
+## Roadmap
+
+- Add automated unit and integration tests for validation, inference, routes, and API output.
+- Package preprocessing and the estimator as a versioned scikit-learn pipeline.
+- Add uncertainty intervals and prediction monitoring.
+- Introduce model and dataset version metadata.
+- Replace the historical source with a contemporary, documented, ethically reviewed dataset.
+- Add privacy-reviewed persistence only if saved explorations become a supported product feature.
 
 ## Author
 
